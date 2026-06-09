@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mundial FIFA 2026 — Predictor</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0c101c;--s1:#141b2d;--s2:#1c2540;--br:#1f2e4a;
+  --green:#34d399;--gbg:rgba(52,211,153,.08);
+  --amber:#fbbf24;--abg:rgba(251,191,36,.09);
+  --red:#f87171;--rbg:rgba(248,113,113,.09);
+  --blue:#60a5fa;--bbg:rgba(96,165,250,.08);
+  --text:#e1e8f5;--muted:#4a5e82;--accent:#7db8ff;--gold:#fcd34d;
+}
+html{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;font-size:14px}
+body{min-height:100vh;padding-bottom:60px}
+
+header{padding:24px 20px 18px;border-bottom:1px solid var(--br);display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.logo{font-size:19px;font-weight:800}
+.logo em{color:var(--gold);font-style:normal}
+.tagline{font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;margin-top:3px}
+.last-upd{font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;margin-top:6px}
+
+/* IMPORT PANEL */
+.import-panel{margin:16px 20px 0;background:var(--s1);border:1px solid var(--br);border-radius:12px;overflow:hidden}
+.import-header{padding:12px 16px;border-bottom:1px solid var(--br);display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none}
+.import-header-left{display:flex;align-items:center;gap:10px}
+.import-title{font-size:12px;font-weight:700;color:var(--text)}
+.import-sub{font-size:10px;color:var(--muted)}
+.import-arrow{font-size:11px;color:var(--muted);transition:.2s}
+.import-arrow.open{transform:rotate(180deg)}
+.import-body{padding:14px 16px;display:none}
+.import-body.open{display:block}
+.import-steps{font-size:11px;color:var(--muted);line-height:1.9;margin-bottom:12px}
+.import-steps strong{color:var(--text)}
+.import-steps code{font-family:'DM Mono',monospace;font-size:10px;background:var(--s2);padding:1px 5px;border-radius:3px;color:var(--accent)}
+.import-textarea{width:100%;height:80px;background:var(--s2);border:1px solid var(--br);border-radius:8px;color:var(--text);font-family:'DM Mono',monospace;font-size:12px;padding:10px 12px;resize:vertical;margin-bottom:10px}
+.import-textarea:focus{outline:none;border-color:var(--accent)}
+.import-textarea::placeholder{color:var(--muted)}
+.import-btns{display:flex;gap:8px;align-items:center}
+.btn-import{padding:8px 18px;background:var(--gbg);border:1px solid rgba(52,211,153,.4);border-radius:7px;color:var(--green);font-family:'Outfit',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:.12s}
+.btn-import:hover{background:rgba(52,211,153,.14)}
+.btn-clear-all{padding:8px 14px;background:transparent;border:1px solid var(--br);border-radius:7px;color:var(--muted);font-family:'Outfit',sans-serif;font-size:12px;cursor:pointer}
+.btn-clear-all:hover{border-color:var(--red);color:var(--red)}
+.import-msg{font-size:11px;margin-left:auto;font-family:'DM Mono',monospace}
+.import-msg.ok{color:var(--green)}
+.import-msg.err{color:var(--red)}
+
+.tabs{padding:0 20px;border-bottom:1px solid var(--br);display:flex;overflow-x:auto;scrollbar-width:none;margin-top:16px}
+.tabs::-webkit-scrollbar{display:none}
+.tab{padding:10px 14px;font-size:11px;font-weight:700;letter-spacing:.06em;color:var(--muted);background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;white-space:nowrap;transition:.12s}
+.tab:hover{color:var(--text)}
+.tab.on{color:var(--accent);border-bottom-color:var(--accent)}
+.tab.done{color:var(--green)}
+.tab.on.done{border-bottom-color:var(--green)}
+
+.page{padding:18px 20px;display:grid;grid-template-columns:270px 1fr;gap:16px;align-items:start}
+@media(max-width:680px){.page{grid-template-columns:1fr}}
+
+.card{background:var(--s1);border:1px solid var(--br);border-radius:12px;overflow:hidden}
+.ch{padding:11px 14px;border-bottom:1px solid var(--br);display:flex;align-items:center;justify-content:space-between}
+.ch-lbl{font-size:10px;font-weight:700;letter-spacing:.1em;color:var(--muted);text-transform:uppercase}
+.ch em{font-style:normal;font-size:9px;padding:2px 7px;border-radius:4px;font-weight:600}
+.proj{background:var(--bbg);color:var(--accent);border:1px solid rgba(96,165,250,.2)}
+.real{background:var(--gbg);color:var(--green);border:1px solid rgba(52,211,153,.2)}
+table.st{width:100%;border-collapse:collapse}
+table.st th{padding:7px 12px;font-size:9px;font-weight:700;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;text-align:left;border-bottom:1px solid var(--br)}
+table.st td{padding:9px 12px;font-size:12px;font-weight:500}
+table.st tr:not(:last-child) td{border-bottom:1px solid rgba(31,46,74,.6)}
+.q td:first-child{color:var(--green);font-weight:700}
+.pts{font-weight:800!important;color:var(--text)!important}
+.gd{color:var(--muted)!important;font-family:'DM Mono',monospace;font-size:11px!important}
+.qbar{padding:5px 12px;font-size:9px;color:var(--green);background:var(--gbg);border-top:1px dashed rgba(52,211,153,.2)}
+.elo-blk{padding:11px 14px;border-top:1px solid var(--br)}
+.elo-t{font-size:9px;font-weight:700;letter-spacing:.1em;color:var(--muted);text-transform:uppercase;margin-bottom:8px}
+.elo-row{display:flex;justify-content:space-between;padding:4px 0;font-size:11px;font-weight:500}
+.elo-row+.elo-row{border-top:1px solid rgba(31,46,74,.5)}
+.elo-v{color:var(--accent);font-family:'DM Mono',monospace;font-size:11px}
+
+.mlist{display:flex;flex-direction:column;gap:8px}
+.mc{background:var(--s1);border:1px solid var(--br);border-radius:10px;padding:12px 14px;transition:border-color .15s}
+.mc:hover{border-color:rgba(96,165,250,.2)}
+.mc.rr{border-color:rgba(52,211,153,.3);background:rgba(52,211,153,.02)}
+.mmeta{display:flex;align-items:center;gap:7px;margin-bottom:8px;flex-wrap:wrap}
+.mdate{font-size:10px;color:var(--muted)}
+.mvenue{font-size:10px;color:var(--muted)}
+.bdg{font-size:9px;font-weight:700;padding:2px 7px;border-radius:4px;letter-spacing:.05em;margin-left:auto;text-transform:uppercase}
+.bdg.r{background:var(--gbg);color:var(--green);border:1px solid rgba(52,211,153,.3)}
+.bdg.p{background:var(--bbg);color:var(--accent);border:1px solid rgba(96,165,250,.2)}
+.mrow{display:flex;align-items:center;gap:10px}
+.tn{flex:1;font-size:13px;font-weight:700}
+.tn.h{text-align:left}
+.tn.a{text-align:right}
+.sb{min-width:60px;text-align:center;padding:6px 10px;border-radius:7px;font-family:'DM Mono',monospace;font-size:20px;font-weight:700;line-height:1}
+.sb.r{background:var(--gbg);color:var(--green);border:1px solid rgba(52,211,153,.25)}
+.sb.p{background:var(--s2);color:var(--text);border:1px solid var(--br)}
+.mstats{margin-top:9px}
+.xgrow{display:flex;align-items:center;gap:6px;margin-bottom:5px}
+.xglbl{font-size:9px;color:var(--muted);width:20px;font-weight:600}
+.xgv{font-size:10px;color:var(--muted);min-width:30px;font-family:'DM Mono',monospace}
+.xgv.r{text-align:right}
+.ptrack{flex:1;height:3px;background:var(--br);border-radius:2px;overflow:hidden}
+.pfill{height:100%;background:var(--green);border-radius:2px}
+.probs{display:flex;gap:5px;margin-top:6px}
+.pi{flex:1;text-align:center;padding:6px 3px;border-radius:7px;background:var(--s2);border:1px solid var(--br)}
+.pi.w{border-color:rgba(52,211,153,.2);background:var(--gbg)}
+.pi.d{border-color:rgba(251,191,36,.2);background:var(--abg)}
+.pi.l{border-color:rgba(248,113,113,.2);background:var(--rbg)}
+.pct{font-family:'DM Mono',monospace;font-size:13px;font-weight:700}
+.pi.w .pct{color:var(--green)}
+.pi.d .pct{color:var(--amber)}
+.pi.l .pct{color:var(--red)}
+.plbl{font-size:9px;color:var(--muted);letter-spacing:.04em;text-transform:uppercase;margin-top:2px}
+.tops{margin-top:7px;display:flex;gap:4px;flex-wrap:wrap}
+.tp{font-family:'DM Mono',monospace;font-size:10px;padding:3px 8px;border-radius:5px;background:var(--s2);color:var(--muted);border:1px solid var(--br)}
+.tp:first-child{background:rgba(96,165,250,.1);color:var(--accent);border-color:rgba(96,165,250,.25)}
+.tp-pct{opacity:.5;font-size:9px}
+.rinp{display:flex;align-items:center;gap:7px;margin-top:10px;padding-top:10px;border-top:1px solid var(--br)}
+.rinp label{font-size:10px;color:var(--muted)}
+.si{width:40px;height:33px;text-align:center;background:var(--s2);border:1px solid var(--br);border-radius:6px;color:var(--text);font-family:'DM Mono',monospace;font-size:16px;font-weight:600}
+.si:focus{outline:none;border-color:var(--accent)}
+.dsep{color:var(--muted);font-weight:700;font-size:16px}
+.bset{margin-left:auto;padding:5px 13px;background:transparent;border:1px solid rgba(52,211,153,.4);border-radius:6px;color:var(--green);font-family:'Outfit',sans-serif;font-size:11px;font-weight:700;cursor:pointer;transition:.12s}
+.bset:hover{background:var(--gbg)}
+.bclr{padding:5px 10px;background:transparent;border:1px solid var(--br);border-radius:6px;color:var(--muted);font-size:11px;cursor:pointer;font-family:'Outfit',sans-serif}
+.bclr:hover{border-color:var(--red);color:var(--red)}
+#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(14px);background:var(--s1);border:1px solid var(--green);border-radius:8px;padding:9px 18px;font-size:12px;color:var(--green);opacity:0;transition:all .25s;pointer-events:none;z-index:99;white-space:nowrap}
+#toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+.foot{padding:10px 20px;font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;border-top:1px solid var(--br);margin-top:20px;line-height:1.9}
+</style>
+</head>
+<body>
+<div id="toast"></div>
+
+<header>
+  <div>
+    <div class="logo">FIFA World Cup <em>2026</em> — Predictor</div>
+    <div class="tagline">Elo · Dixon-Coles · Poisson · resultados persistentes</div>
+  </div>
+  <div class="last-upd" id="lastUpd"></div>
+</header>
+
+<!-- PANEL DE CARGA -->
+<div class="import-panel">
+  <div class="import-header" onclick="toggleImport()">
+    <div class="import-header-left">
+      <span style="font-size:16px">📥</span>
+      <div>
+        <div class="import-title">Cargar resultados reales</div>
+        <div class="import-sub">Pegá el JSON que te paso en el chat → clic en Aplicar</div>
+      </div>
+    </div>
+    <span class="import-arrow" id="importArrow">▼</span>
+  </div>
+  <div class="import-body" id="importBody">
+    <div class="import-steps">
+      <strong>Cómo usarlo:</strong> cuando quieras actualizar, escribime en el chat 
+      <strong>"dame los resultados del Mundial"</strong>. Te respondo con algo como:<br>
+      <code>{"J1":[2,0],"A1":[1,1],"C1":[2,1]}</code><br>
+      Copiás ese JSON, lo pegás abajo y apretás <strong>Aplicar</strong>.
+    </div>
+    <textarea class="import-textarea" id="importTa" placeholder='{"J1":[2,0],"A1":[1,1],"C1":[2,1]}'></textarea>
+    <div class="import-btns">
+      <button class="btn-import" onclick="applyImport()">✓ Aplicar resultados</button>
+      <button class="btn-clear-all" onclick="clearAll()">Borrar todo</button>
+      <span class="import-msg" id="importMsg"></span>
+    </div>
+  </div>
+</div>
+
+<div class="tabs" id="tabs"></div>
+<div id="page"></div>
+<div class="foot">
+  MODELO · Elo (FIFA Nov 2025) → xG ataque/defensa · Dixon-Coles ρ=−0.10 · Poisson doble ·
+  Score = esperado continuo con desempate por P(victoria) · Resultados guardados en localStorage
+</div>
+
+<script>
+const DATA={"groups":{"A":["México","Sudáfrica","Corea del Sur","Chequia"],"B":["Canadá","Suiza","Qatar","Bosnia y Herz."],"C":["Brasil","Marruecos","Haití","Escocia"],"D":["EE.UU.","Paraguay","Australia","Turquía"],"E":["Alemania","Curazao","Costa de Marfil","Ecuador"],"F":["Países Bajos","Japón","Túnez","Suecia"],"G":["Bélgica","Egipto","Irán","Nueva Zelanda"],"H":["España","Cabo Verde","Arabia Saudita","Uruguay"],"I":["Francia","Senegal","Noruega","Iraq"],"J":["Argentina","Argelia","Austria","Jordania"],"K":["Portugal","Colombia","Uzbekistán","DR Congo"],"L":["Inglaterra","Croacia","Ghana","Panamá"]},"matches":{"A1":{"g":"A","h":"México","a":"Sudáfrica","date":"11 jun","venue":"Azteca, CDMX","win":61.9,"draw":24.6,"loss":13.4,"xH":1.79,"xA":0.72,"pred":[1,0],"top":[[1,0,13.6],[2,0,13.1],[1,1,11.5],[2,1,9.4],[0,0,9.2],[3,0,7.8]]},"A2":{"g":"A","h":"Corea del Sur","a":"Chequia","date":"11 jun","venue":"Akron, Guadalajara","win":37.6,"draw":29.1,"loss":33.3,"xH":1.33,"xA":1.24,"pred":[1,1],"top":[[1,1,13.9],[0,0,9.0],[1,0,9.0],[2,1,8.4],[0,1,8.3],[1,2,7.8]]},"A3":{"g":"A","h":"Chequia","a":"Sudáfrica","date":"18 jun","venue":"Atlanta","win":51.3,"draw":28.2,"loss":20.5,"xH":1.53,"xA":0.88,"pred":[2,1],"top":[[1,1,13.3],[1,0,12.5],[2,0,10.5],[0,0,10.2],[2,1,9.3],[0,1,6.7]]},"A4":{"g":"A","h":"México","a":"Corea del Sur","date":"18 jun","venue":"Akron, Guadalajara","win":44.2,"draw":28.9,"loss":26.9,"xH":1.44,"xA":1.08,"pred":[2,1],"top":[[1,1,13.8],[1,0,10.4],[0,0,9.3],[2,1,9.0],[2,0,8.4],[0,1,7.4]]},"A5":{"g":"A","h":"Chequia","a":"México","date":"24 jun","venue":"Azteca, CDMX","win":25.0,"draw":29.0,"loss":46.0,"xH":1.01,"xA":1.45,"pred":[1,2],"top":[[1,1,13.8],[0,1,11.2],[0,0,9.8],[1,2,9.1],[0,2,9.0],[1,0,7.4]]},"A6":{"g":"A","h":"Sudáfrica","a":"Corea del Sur","date":"24 jun","venue":"Monterrey","win":18.9,"draw":27.0,"loss":54.1,"xH":0.88,"xA":1.63,"pred":[1,2],"top":[[1,1,12.8],[0,1,12.1],[0,2,10.8],[1,2,9.5],[0,0,9.3],[1,0,6.0]]},"B1":{"g":"B","h":"Canadá","a":"Bosnia y Herz.","date":"12 jun","venue":"Toronto","win":45.5,"draw":28.9,"loss":25.6,"xH":1.45,"xA":1.03,"pred":[2,1],"top":[[1,1,13.8],[1,0,10.9],[0,0,9.6],[2,1,9.1],[2,0,8.8],[0,1,7.4]]},"B2":{"g":"B","h":"Qatar","a":"Suiza","date":"13 jun","venue":"Santa Clara","win":9.7,"draw":21.1,"loss":69.3,"xH":0.64,"xA":2.03,"pred":[0,2],"top":[[0,2,14.3],[0,1,13.2],[1,1,9.9],[0,3,9.7],[1,2,9.1],[0,0,7.8]]},"B3":{"g":"B","h":"Suiza","a":"Bosnia y Herz.","date":"18 jun","venue":"Los Ángeles","win":60.4,"draw":25.2,"loss":14.4,"xH":1.75,"xA":0.75,"pred":[1,0],"top":[[1,0,13.3],[2,0,12.6],[1,1,11.8],[2,1,9.4],[0,0,9.3],[3,0,7.4]]},"B4":{"g":"B","h":"Canadá","a":"Qatar","date":"18 jun","venue":"Vancouver","win":55.1,"draw":26.5,"loss":18.4,"xH":1.68,"xA":0.88,"pred":[2,1],"top":[[1,1,12.6],[1,0,11.9],[2,0,10.9],[2,1,9.6],[0,0,8.9],[3,0,6.1]]},"B5":{"g":"B","h":"Suiza","a":"Canadá","date":"24 jun","venue":"Vancouver","win":50.2,"draw":28.5,"loss":21.3,"xH":1.5,"xA":0.9,"pred":[2,1],"top":[[1,1,13.5],[1,0,12.4],[0,0,10.3],[2,0,10.2],[2,1,9.2],[0,1,6.9]]},"B6":{"g":"B","h":"Bosnia y Herz.","a":"Qatar","date":"24 jun","venue":"Vancouver","win":44.1,"draw":29.5,"loss":26.4,"xH":1.39,"xA":1.03,"pred":[2,1],"top":[[1,1,14.0],[1,0,11.1],[0,0,10.2],[2,1,8.9],[2,0,8.6],[0,1,7.9]]},"C1":{"g":"C","h":"Brasil","a":"Marruecos","date":"13 jun","venue":"MetLife, NJ","win":44.9,"draw":32.1,"loss":22.9,"xH":1.23,"xA":0.81,"pred":[2,1],"top":[[1,0,14.8],[0,0,14.3],[1,1,14.2],[2,0,9.9],[0,1,9.2],[2,1,8.0]]},"C2":{"g":"C","h":"Haití","a":"Escocia","date":"13 jun","venue":"Foxborough","win":13.4,"draw":23.7,"loss":63.0,"xH":0.75,"xA":1.88,"pred":[0,2],"top":[[0,2,12.7],[0,1,12.5],[1,1,11.2],[1,2,9.6],[0,0,8.2],[0,3,7.9]]},"C3":{"g":"C","h":"Brasil","a":"Haití","date":"19 jun","venue":"MetLife, NJ","win":88.4,"draw":9.2,"loss":2.5,"xH":3.14,"xA":0.45,"pred":[3,0],"top":[[3,0,14.5],[2,0,13.9],[4,0,11.4],[1,0,8.4],[5,0,7.2],[3,1,6.5]]},"C4":{"g":"C","h":"Escocia","a":"Marruecos","date":"19 jun","venue":"MetLife, NJ","win":19.0,"draw":30.5,"loss":50.4,"xH":0.74,"xA":1.36,"pred":[1,2],"top":[[0,1,15.5],[1,1,13.5],[0,0,13.5],[0,2,11.4],[1,2,8.4],[1,0,7.8]]},"C5":{"g":"C","h":"Escocia","a":"Brasil","date":"24 jun","venue":"MetLife, NJ","win":11.2,"draw":21.2,"loss":67.7,"xH":0.74,"xA":2.08,"pred":[0,2],"top":[[0,2,13.0],[0,1,11.5],[1,1,10.1],[1,2,9.5],[0,3,9.0],[0,0,6.9]]},"C6":{"g":"C","h":"Marruecos","a":"Haití","date":"24 jun","venue":"MetLife, NJ","win":74.6,"draw":19.2,"loss":6.2,"xH":2.05,"xA":0.45,"pred":[2,0],"top":[[2,0,17.3],[1,0,16.2],[3,0,11.9],[0,0,9.0],[1,1,8.3],[2,1,7.7]]},"D1":{"g":"D","h":"EE.UU.","a":"Paraguay","date":"12 jun","venue":"Los Ángeles","win":61.9,"draw":24.2,"loss":13.8,"xH":1.83,"xA":0.76,"pred":[1,0],"top":[[1,0,12.8],[2,0,12.6],[1,1,11.5],[2,1,9.5],[0,0,8.6],[3,0,7.7]]},"D2":{"g":"D","h":"Australia","a":"Turquía","date":"14 jun","venue":"Dallas","win":31.1,"draw":28.8,"loss":40.1,"xH":1.2,"xA":1.39,"pred":[1,1],"top":[[1,1,13.8],[0,1,9.2],[0,0,8.7],[1,2,8.7],[1,0,7.7],[2,1,7.5]]},"D3":{"g":"D","h":"Turquía","a":"Paraguay","date":"19 jun","venue":"Dallas","win":57.2,"draw":25.8,"loss":17.0,"xH":1.73,"xA":0.84,"pred":[2,1],"top":[[1,1,12.3],[1,0,12.1],[2,0,11.4],[2,1,9.6],[0,0,8.7],[3,0,6.6]]},"D4":{"g":"D","h":"EE.UU.","a":"Australia","date":"19 jun","venue":"Los Ángeles","win":45.1,"draw":28.6,"loss":26.4,"xH":1.47,"xA":1.07,"pred":[2,1],"top":[[1,1,13.6],[1,0,10.3],[2,1,9.1],[0,0,9.1],[2,0,8.5],[0,1,7.2]]},"D5":{"g":"D","h":"Turquía","a":"EE.UU.","date":"25 jun","venue":"Dallas","win":30.6,"draw":28.5,"loss":40.9,"xH":1.2,"xA":1.42,"pred":[1,2],"top":[[1,1,13.6],[0,1,9.1],[1,2,8.8],[0,0,8.5],[1,0,7.5],[2,1,7.5]]},"D6":{"g":"D","h":"Paraguay","a":"Australia","date":"25 jun","venue":"Los Ángeles","win":20.1,"draw":28.1,"loss":51.9,"xH":0.87,"xA":1.54,"pred":[1,2],"top":[[1,1,13.2],[0,1,12.6],[0,2,10.6],[0,0,10.1],[1,2,9.3],[1,0,6.6]]},"E1":{"g":"E","h":"Alemania","a":"Curazao","date":"14 jun","venue":"Foxborough","win":85.8,"draw":10.9,"loss":3.3,"xH":2.95,"xA":0.49,"pred":[2,0],"top":[[2,0,14.1],[3,0,13.9],[4,0,10.2],[1,0,9.1],[2,1,6.9],[3,1,6.8]]},"E2":{"g":"E","h":"Costa de Marfil","a":"Ecuador","date":"14 jun","venue":"Atlanta","win":28.6,"draw":30.4,"loss":41.0,"xH":1.04,"xA":1.3,"pred":[1,2],"top":[[1,1,14.3],[0,1,11.2],[0,0,10.9],[1,0,8.7],[1,2,8.5],[0,2,8.1]]},"E3":{"g":"E","h":"Alemania","a":"Costa de Marfil","date":"20 jun","venue":"Atlanta","win":60.8,"draw":24.2,"loss":15.1,"xH":1.86,"xA":0.82,"pred":[2,0],"top":[[2,0,11.8],[1,0,11.7],[1,1,11.5],[2,1,9.7],[0,0,7.9],[3,0,7.3]]},"E4":{"g":"E","h":"Ecuador","a":"Curazao","date":"20 jun","venue":"Houston","win":70.2,"draw":20.6,"loss":9.2,"xH":2.06,"xA":0.62,"pred":[2,0],"top":[[2,0,14.5],[1,0,13.2],[3,0,10.0],[1,1,9.7],[2,1,9.0],[0,0,7.7]]},"E5":{"g":"E","h":"Curazao","a":"Costa de Marfil","date":"25 jun","venue":"Houston","win":12.4,"draw":24.0,"loss":63.6,"xH":0.69,"xA":1.82,"pred":[0,1],"top":[[0,1,13.8],[0,2,13.5],[1,1,11.2],[1,2,9.3],[0,0,9.1],[0,3,8.2]]},"E6":{"g":"E","h":"Ecuador","a":"Alemania","date":"25 jun","venue":"Foxborough","win":19.5,"draw":26.4,"loss":54.1,"xH":0.93,"xA":1.69,"pred":[1,2],"top":[[1,1,12.6],[0,1,11.2],[0,2,10.4],[1,2,9.7],[0,0,8.4],[0,3,5.8]]},"F1":{"g":"F","h":"Países Bajos","a":"Japón","date":"14 jun","venue":"Los Ángeles","win":42.8,"draw":29.3,"loss":27.9,"xH":1.4,"xA":1.08,"pred":[2,1],"top":[[1,1,13.9],[1,0,10.4],[0,0,9.6],[2,1,8.8],[2,0,8.2],[0,1,7.8]]},"F2":{"g":"F","h":"Suecia","a":"Túnez","date":"14 jun","venue":"Miami","win":52.1,"draw":28.3,"loss":19.6,"xH":1.52,"xA":0.84,"pred":[2,1],"top":[[1,1,13.3],[1,0,13.1],[2,0,10.9],[0,0,10.6],[2,1,9.2],[0,1,6.7]]},"F3":{"g":"F","h":"Países Bajos","a":"Suecia","date":"20 jun","venue":"Miami","win":51.9,"draw":27.6,"loss":20.5,"xH":1.59,"xA":0.91,"pred":[2,1],"top":[[1,1,13.1],[1,0,11.8],[2,0,10.3],[2,1,9.4],[0,0,9.4],[0,1,6.3]]},"F4":{"g":"F","h":"Túnez","a":"Japón","date":"21 jun","venue":"Los Ángeles","win":13.8,"draw":24.5,"loss":61.7,"xH":0.74,"xA":1.81,"pred":[0,1],"top":[[0,1,13.1],[0,2,12.8],[1,1,11.5],[1,2,9.5],[0,0,8.9],[0,3,7.7]]},"F5":{"g":"F","h":"Japón","a":"Suecia","date":"25 jun","venue":"Miami","win":43.3,"draw":30.3,"loss":26.4,"xH":1.33,"xA":0.99,"pred":[2,1],"top":[[1,1,14.2],[1,0,11.8],[0,0,11.1],[2,0,8.7],[2,1,8.6],[0,1,8.4]]},"F6":{"g":"F","h":"Túnez","a":"Países Bajos","date":"25 jun","venue":"Los Ángeles","win":9.7,"draw":20.0,"loss":70.3,"xH":0.69,"xA":2.15,"pred":[0,2],"top":[[0,2,13.6],[0,1,11.8],[0,3,9.7],[1,1,9.5],[1,2,9.3],[0,0,6.7]]},"G1":{"g":"G","h":"Bélgica","a":"Egipto","date":"15 jun","venue":"Dallas","win":61.9,"draw":23.9,"loss":14.2,"xH":1.87,"xA":0.79,"pred":[2,0],"top":[[2,0,12.3],[1,0,12.1],[1,1,11.4],[2,1,9.7],[0,0,8.0],[3,0,7.6]]},"G2":{"g":"G","h":"Irán","a":"Nueva Zelanda","date":"15 jun","venue":"Seattle","win":50.2,"draw":29.2,"loss":20.7,"xH":1.46,"xA":0.85,"pred":[2,1],"top":[[1,1,13.6],[1,0,13.3],[0,0,11.2],[2,0,10.6],[2,1,9.0],[0,1,7.2]]},"G3":{"g":"G","h":"Bélgica","a":"Irán","date":"21 jun","venue":"Seattle","win":65.8,"draw":22.0,"loss":12.2,"xH":2.02,"xA":0.76,"pred":[2,0],"top":[[2,0,12.6],[1,0,11.6],[1,1,10.5],[2,1,9.6],[3,0,8.5],[0,0,7.2]]},"G4":{"g":"G","h":"Nueva Zelanda","a":"Egipto","date":"21 jun","venue":"Dallas","win":18.3,"draw":28.5,"loss":53.2,"xH":0.79,"xA":1.51,"pred":[1,2],"top":[[0,1,14.0],[1,1,13.2],[0,2,11.5],[0,0,11.3],[1,2,9.0],[1,0,6.7]]},"G5":{"g":"G","h":"Egipto","a":"Irán","date":"26 jun","venue":"Seattle","win":38.0,"draw":30.5,"loss":31.6,"xH":1.25,"xA":1.11,"pred":[1,1],"top":[[1,1,14.4],[0,0,10.7],[1,0,10.4],[0,1,9.2],[2,1,8.2],[2,0,7.3]]},"G6":{"g":"G","h":"Nueva Zelanda","a":"Bélgica","date":"26 jun","venue":"Dallas","win":5.6,"draw":15.7,"loss":78.7,"xH":0.54,"xA":2.44,"pred":[0,2],"top":[[0,2,15.2],[0,3,12.4],[0,1,11.8],[1,2,8.2],[0,4,7.5],[1,1,7.4]]},"H1":{"g":"H","h":"España","a":"Cabo Verde","date":"15 jun","venue":"Kansas City","win":89.4,"draw":8.6,"loss":2.0,"xH":3.14,"xA":0.38,"pred":[3,0],"top":[[3,0,15.5],[2,0,14.8],[4,0,12.1],[1,0,9.1],[5,0,7.6],[3,1,5.9]]},"H2":{"g":"H","h":"Arabia Saudita","a":"Uruguay","date":"15 jun","venue":"Kansas City","win":12.6,"draw":23.3,"loss":64.0,"xH":0.73,"xA":1.9,"pred":[0,2],"top":[[0,2,13.0],[0,1,12.7],[1,1,11.0],[1,2,9.5],[0,0,8.3],[0,3,8.2]]},"H3":{"g":"H","h":"España","a":"Arabia Saudita","date":"21 jun","venue":"Kansas City","win":84.1,"draw":12.3,"loss":3.7,"xH":2.74,"xA":0.47,"pred":[2,0],"top":[[2,0,15.3],[3,0,14.0],[1,0,10.6],[4,0,9.6],[2,1,7.2],[3,1,6.5]]},"H4":{"g":"H","h":"Uruguay","a":"Cabo Verde","date":"21 jun","venue":"Kansas City","win":72.9,"draw":19.1,"loss":8.0,"xH":2.17,"xA":0.6,"pred":[2,0],"top":[[2,0,14.8],[1,0,12.9],[3,0,10.7],[1,1,9.0],[2,1,8.8],[0,0,7.1]]},"H5":{"g":"H","h":"Cabo Verde","a":"Arabia Saudita","date":"26 jun","venue":"Kansas City","win":25.5,"draw":29.8,"loss":44.7,"xH":0.98,"xA":1.38,"pred":[1,2],"top":[[1,1,14.1],[0,1,11.7],[0,0,10.7],[0,2,8.9],[1,2,8.8],[1,0,8.0]]},"H6":{"g":"H","h":"Uruguay","a":"España","date":"26 jun","venue":"Kansas City","win":15.3,"draw":26.4,"loss":58.3,"xH":0.74,"xA":1.66,"pred":[0,1],"top":[[0,1,14.0],[0,2,12.5],[1,1,12.3],[0,0,10.2],[1,2,9.2],[0,3,6.9]]},"I1":{"g":"I","h":"Francia","a":"Senegal","date":"16 jun","venue":"MetLife, NJ","win":65.1,"draw":23.0,"loss":11.9,"xH":1.91,"xA":0.7,"pred":[2,0],"top":[[2,0,13.4],[1,0,13.1],[1,1,10.8],[2,1,9.4],[3,0,8.5],[0,0,8.3]]},"I2":{"g":"I","h":"Iraq","a":"Noruega","date":"16 jun","venue":"Foxborough","win":5.8,"draw":14.6,"loss":79.6,"xH":0.61,"xA":2.62,"pred":[0,2],"top":[[0,2,13.6],[0,3,11.9],[0,1,9.8],[1,2,8.3],[0,4,7.8],[1,3,7.3]]},"I3":{"g":"I","h":"Francia","a":"Iraq","date":"22 jun","venue":"Atlanta","win":90.1,"draw":8.0,"loss":1.9,"xH":3.27,"xA":0.41,"pred":[3,0],"top":[[3,0,15.1],[2,0,13.8],[4,0,12.3],[1,0,8.1],[5,0,8.0],[3,1,6.1]]},"I4":{"g":"I","h":"Noruega","a":"Senegal","date":"22 jun","venue":"MetLife, NJ","win":47.1,"draw":28.0,"loss":24.9,"xH":1.53,"xA":1.06,"pred":[2,1],"top":[[1,1,13.4],[1,0,10.3],[2,1,9.3],[2,0,8.8],[0,0,8.7],[0,1,6.7]]},"I5":{"g":"I","h":"Noruega","a":"Francia","date":"26 jun","venue":"Foxborough","win":18.7,"draw":25.8,"loss":55.5,"xH":0.93,"xA":1.74,"pred":[1,2],"top":[[1,1,12.3],[0,1,11.0],[0,2,10.5],[1,2,9.8],[0,0,8.0],[0,3,6.1]]},"I6":{"g":"I","h":"Senegal","a":"Iraq","date":"26 jun","venue":"Atlanta","win":67.4,"draw":21.9,"loss":10.7,"xH":1.98,"xA":0.67,"pred":[2,0],"top":[[2,0,13.9],[1,0,13.0],[1,1,10.3],[2,1,9.3],[3,0,9.2],[0,0,8.0]]},"J1":{"g":"J","h":"Argentina","a":"Argelia","date":"16 jun","venue":"Kansas City","win":75.6,"draw":17.2,"loss":7.2,"xH":2.36,"xA":0.62,"pred":[2,0],"top":[[2,0,14.2],[1,0,11.3],[3,0,11.2],[2,1,8.8],[1,1,8.2],[3,1,6.9]]},"J2":{"g":"J","h":"Austria","a":"Jordania","date":"17 jun","venue":"Santa Clara","win":65.4,"draw":23.0,"loss":11.6,"xH":1.9,"xA":0.68,"pred":[2,0],"top":[[2,0,13.7],[1,0,13.4],[1,1,10.8],[2,1,9.3],[3,0,8.7],[0,0,8.5]]},"J3":{"g":"J","h":"Argentina","a":"Austria","date":"22 jun","venue":"Dallas","win":68.0,"draw":21.0,"loss":11.0,"xH":2.09,"xA":0.73,"pred":[2,0],"top":[[2,0,13.1],[1,0,11.6],[1,1,10.0],[2,1,9.5],[3,0,9.1],[0,0,6.9]]},"J4":{"g":"J","h":"Jordania","a":"Argelia","date":"22 jun","venue":"Santa Clara","win":16.6,"draw":27.1,"loss":56.3,"xH":0.77,"xA":1.61,"pred":[1,2],"top":[[0,1,13.7],[1,1,12.6],[0,2,12.0],[0,0,10.4],[1,2,9.2],[0,3,6.5]]},"J5":{"g":"J","h":"Argentina","a":"Jordania","date":"27 jun","venue":"Dallas","win":90.2,"draw":7.9,"loss":1.9,"xH":3.3,"xA":0.41,"pred":[3,0],"top":[[3,0,14.9],[2,0,13.6],[4,0,12.3],[5,0,8.1],[1,0,7.9],[3,1,6.1]]},"J6":{"g":"J","h":"Argelia","a":"Austria","date":"27 jun","venue":"Kansas City","win":26.8,"draw":29.8,"loss":43.3,"xH":1.02,"xA":1.36,"pred":[1,2],"top":[[1,1,14.1],[0,1,11.3],[0,0,10.5],[1,2,8.7],[0,2,8.6],[1,0,8.1]]},"K1":{"g":"K","h":"Portugal","a":"DR Congo","date":"17 jun","venue":"Houston","win":83.9,"draw":12.2,"loss":3.9,"xH":2.78,"xA":0.5,"pred":[2,0],"top":[[2,0,14.6],[3,0,13.6],[1,0,10.0],[4,0,9.4],[2,1,7.3],[3,1,6.8]]},"K2":{"g":"K","h":"Uzbekistán","a":"Colombia","date":"17 jun","venue":"Azteca, CDMX","win":11.5,"draw":22.2,"loss":66.3,"xH":0.71,"xA":1.98,"pred":[0,2],"top":[[0,2,13.3],[0,1,12.5],[1,1,10.5],[1,2,9.5],[0,3,8.8],[0,0,7.7]]},"K3":{"g":"K","h":"Portugal","a":"Uzbekistán","date":"23 jun","venue":"Houston","win":85.9,"draw":10.9,"loss":3.2,"xH":2.92,"xA":0.47,"pred":[2,0],"top":[[2,0,14.5],[3,0,14.1],[4,0,10.3],[1,0,9.4],[2,1,6.9],[3,1,6.7]]},"K4":{"g":"K","h":"Colombia","a":"DR Congo","date":"23 jun","venue":"Azteca, CDMX","win":63.3,"draw":23.5,"loss":13.2,"xH":1.89,"xA":0.75,"pred":[2,0],"top":[[2,0,12.7],[1,0,12.5],[1,1,11.2],[2,1,9.6],[0,0,8.2],[3,0,8.0]]},"K5":{"g":"K","h":"Colombia","a":"Portugal","date":"27 jun","venue":"Houston","win":15.5,"draw":25.2,"loss":59.3,"xH":0.8,"xA":1.76,"pred":[1,2],"top":[[0,1,12.5],[0,2,12.0],[1,1,11.9],[1,2,9.6],[0,0,8.8],[0,3,7.1]]},"K6":{"g":"K","h":"DR Congo","a":"Uzbekistán","date":"27 jun","venue":"Azteca, CDMX","win":37.8,"draw":30.4,"loss":31.8,"xH":1.25,"xA":1.12,"pred":[1,1],"top":[[1,1,14.4],[0,0,10.7],[1,0,10.4],[0,1,9.2],[2,1,8.2],[1,2,7.4]]},"L1":{"g":"L","h":"Inglaterra","a":"Croacia","date":"17 jun","venue":"Dallas","win":43.4,"draw":29.9,"loss":26.7,"xH":1.36,"xA":1.01,"pred":[2,1],"top":[[1,1,14.1],[1,0,11.4],[0,0,10.6],[2,1,8.7],[2,0,8.6],[0,1,8.2]]},"L2":{"g":"L","h":"Ghana","a":"Panamá","date":"17 jun","venue":"Toronto","win":48.7,"draw":29.1,"loss":22.2,"xH":1.45,"xA":0.9,"pred":[2,1],"top":[[1,1,13.7],[1,0,12.5],[0,0,10.7],[2,0,10.0],[2,1,9.0],[0,1,7.3]]},"L3":{"g":"L","h":"Inglaterra","a":"Ghana","date":"23 jun","venue":"Toronto","win":72.3,"draw":18.5,"loss":9.1,"xH":2.31,"xA":0.72,"pred":[2,0],"top":[[2,0,12.9],[1,0,10.4],[3,0,10.0],[2,1,9.3],[1,1,8.8],[3,1,7.2]]},"L4":{"g":"L","h":"Panamá","a":"Croacia","date":"23 jun","venue":"Dallas","win":7.6,"draw":20.1,"loss":72.3,"xH":0.53,"xA":2.05,"pred":[0,2],"top":[[0,2,15.9],[0,1,14.7],[0,3,10.9],[1,1,9.1],[1,2,8.5],[0,0,8.4]]},"L5":{"g":"L","h":"Panamá","a":"Inglaterra","date":"27 jun","venue":"Toronto","win":4.3,"draw":12.6,"loss":83.1,"xH":0.54,"xA":2.78,"pred":[0,2],"top":[[0,2,14.1],[0,3,13.1],[0,1,9.6],[0,4,9.1],[1,2,7.6],[1,3,7.0]]},"L6":{"g":"L","h":"Croacia","a":"Ghana","date":"27 jun","venue":"Dallas","win":60.1,"draw":25.7,"loss":14.2,"xH":1.7,"xA":0.71,"pred":[1,0],"top":[[1,0,14.2],[2,0,13.0],[1,1,11.9],[0,0,10.1],[2,1,9.2],[3,0,7.4]]}},"elo":{"España":2050,"Francia":2030,"Argentina":2010,"Portugal":1980,"Brasil":1960,"Inglaterra":1940,"Países Bajos":1920,"Alemania":1900,"Bélgica":1870,"Uruguay":1840,"Croacia":1820,"Noruega":1800,"Japón":1790,"Marruecos":1780,"Colombia":1760,"Suiza":1750,"EE.UU.":1740,"México":1720,"Suecia":1710,"Senegal":1700,"Ecuador":1680,"Turquía":1670,"Australia":1660,"Corea del Sur":1650,"Chequia":1640,"Escocia":1630,"Austria":1620,"Canadá":1610,"Ghana":1580,"Egipto":1570,"Irán":1560,"Arabia Saudita":1550,"Argelia":1540,"Túnez":1530,"DR Congo":1510,"Bosnia y Herz.":1500,"Qatar":1480,"Uzbekistán":1470,"Cabo Verde":1460,"Panamá":1450,"Paraguay":1445,"Costa de Marfil":1520,"Sudáfrica":1440,"Haití":1400,"Iraq":1390,"Curazao":1370,"Nueva Zelanda":1380,"Jordania":1360},"flags":{"Argentina":"🇦🇷","Argelia":"🇩🇿","Austria":"🇦🇹","Jordania":"🇯🇴","México":"🇲🇽","Sudáfrica":"🇿🇦","Corea del Sur":"🇰🇷","Chequia":"🇨🇿","Canadá":"🇨🇦","Suiza":"🇨🇭","Qatar":"🇶🇦","Bosnia y Herz.":"🇧🇦","Brasil":"🇧🇷","Marruecos":"🇲🇦","Haití":"🇭🇹","Escocia":"🏴󠁧󠁢󠁳󠁣󠁴󠁿","EE.UU.":"🇺🇸","Paraguay":"🇵🇾","Australia":"🇦🇺","Turquía":"🇹🇷","Alemania":"🇩🇪","Curazao":"🇨🇼","Costa de Marfil":"🇨🇮","Ecuador":"🇪🇨","Países Bajos":"🇳🇱","Japón":"🇯🇵","Túnez":"🇹🇳","Suecia":"🇸🇪","Bélgica":"🇧🇪","Egipto":"🇪🇬","Irán":"🇮🇷","Nueva Zelanda":"🇳🇿","España":"🇪🇸","Cabo Verde":"🇨🇻","Arabia Saudita":"🇸🇦","Uruguay":"🇺🇾","Francia":"🇫🇷","Senegal":"🇸🇳","Noruega":"🇳🇴","Iraq":"🇮🇶","Portugal":"🇵🇹","Colombia":"🇨🇴","Uzbekistán":"🇺🇿","DR Congo":"🇨🇩","Inglaterra":"🏴󠁧󠁢󠁥󠁮󠁧󠁿","Croacia":"🇭🇷","Ghana":"🇬🇭","Panamá":"🇵🇦"}};
+const GK=Object.keys(DATA.groups);
+const st={g:'J',res:{}};
+const F=t=>DATA.flags[t]||'';
+
+function saveState(){
+  try{
+    localStorage.setItem('wc2026_res',JSON.stringify(st.res));
+    const ts=new Date().toLocaleString('es-AR',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
+    localStorage.setItem('wc2026_ts',ts);
+    document.getElementById('lastUpd').textContent='Guardado: '+ts;
+  }catch(e){}
+}
+function loadState(){
+  try{
+    const r=localStorage.getItem('wc2026_res');
+    if(r) Object.assign(st.res,JSON.parse(r));
+    const ts=localStorage.getItem('wc2026_ts');
+    if(ts) document.getElementById('lastUpd').textContent='Guardado: '+ts;
+  }catch(e){}
+}
+
+function toggleImport(){
+  const body=document.getElementById('importBody');
+  const arrow=document.getElementById('importArrow');
+  const open=body.classList.toggle('open');
+  arrow.classList.toggle('open',open);
+}
+
+function applyImport(){
+  const raw=document.getElementById('importTa').value.trim();
+  const msg=document.getElementById('importMsg');
+  if(!raw){msg.className='import-msg err';msg.textContent='Pegá el JSON primero';return}
+  try{
+    const obj=JSON.parse(raw);
+    let n=0;
+    Object.entries(obj).forEach(([mid,sc])=>{
+      if(DATA.matches[mid]&&Array.isArray(sc)&&sc.length===2){
+        st.res[mid]=[+sc[0],+sc[1]];n++;
+      }
+    });
+    if(n===0){msg.className='import-msg err';msg.textContent='No se reconoció ningún partido';return}
+    saveState();render();
+    msg.className='import-msg ok';
+    msg.textContent=n+' resultado'+(n>1?'s':'')+' aplicado'+(n>1?'s':'')+'  ✓';
+    document.getElementById('importTa').value='';
+    toast(n+' resultado'+(n>1?'s':'')+' cargado'+(n>1?'s':''),'#34d399');
+    setTimeout(()=>msg.textContent='',3000);
+  }catch(e){
+    msg.className='import-msg err';
+    msg.textContent='JSON inválido — revisá el formato';
+  }
+}
+
+function clearAll(){
+  if(!confirm('¿Borrar todos los resultados cargados?'))return;
+  st.res={};saveState();render();
+  toast('Resultados borrados','#fbbf24');
+}
+
+function stnd(gk,pred){
+  const ts={};
+  DATA.groups[gk].forEach(t=>ts[t]={pts:0,gf:0,ga:0,gd:0,pld:0});
+  Object.entries(DATA.matches).forEach(([mid,m])=>{
+    if(m.g!==gk)return;
+    const r=st.res[mid];
+    if(!r&&!pred)return;
+    const[h,a]=r||[m.pred[0],m.pred[1]];
+    ts[m.h].pld++;ts[m.a].pld++;
+    ts[m.h].gf+=h;ts[m.h].ga+=a;ts[m.h].gd+=h-a;
+    ts[m.a].gf+=a;ts[m.a].ga+=h;ts[m.a].gd+=a-h;
+    if(h>a)ts[m.h].pts+=3;else if(h<a)ts[m.a].pts+=3;else{ts[m.h].pts++;ts[m.a].pts++;}
+  });
+  return Object.entries(ts).sort((a,b)=>b[1].pts-a[1].pts||b[1].gd-a[1].gd||b[1].gf-a[1].gf);
+}
+
+function rSide(gk){
+  const rows=stnd(gk,true);
+  const hr=Object.entries(DATA.matches).some(([mid,m])=>m.g===gk&&st.res[mid]);
+  return `<div class="card">
+    <div class="ch"><span class="ch-lbl">Grupo ${gk}</span><em class="${hr?'real':'proj'}">${hr?'resultados reales':'proyección'}</em></div>
+    <table class="st"><thead><tr><th>#</th><th>Equipo</th><th>PJ</th><th>Pts</th><th>GD</th></tr></thead><tbody>
+    ${rows.map(([t,s],i)=>`<tr class="${i<2?'q':''}"><td>${i+1}</td><td>${F(t)} ${t}</td><td>${s.pld}</td><td class="pts">${s.pts}</td><td class="gd">${s.gd>0?'+':''}${s.gd}</td></tr>`).join('')}
+    </tbody></table>
+    <div class="qbar">↑ Clasifican top 2 + 8 mejores terceros</div>
+    <div class="elo-blk"><div class="elo-t">Elo rating</div>
+    ${DATA.groups[gk].map(t=>`<div class="elo-row"><span>${F(t)} ${t}</span><span class="elo-v">${DATA.elo[t]}</span></div>`).join('')}
+    </div></div>`;
+}
+
+function rMatch(mid){
+  const m=DATA.matches[mid],r=st.res[mid],isR=!!r;
+  const hs=isR?r[0]:m.pred[0],as=isR?r[1]:m.pred[1];
+  return `<div class="mc ${isR?'rr':''}" id="mc_${mid}">
+    <div class="mmeta"><span class="mdate">${m.date}</span><span class="mvenue">· ${m.venue}</span><span class="bdg ${isR?'r':'p'}">${isR?'REAL':'PRED'}</span></div>
+    <div class="mrow">
+      <span class="tn h">${F(m.h)} ${m.h}</span>
+      <span class="sb ${isR?'r':'p'}">${hs}&thinsp;–&thinsp;${as}</span>
+      <span class="tn a">${m.a} ${F(m.a)}</span>
+    </div>
+    ${!isR?`<div class="mstats">
+      <div class="xgrow"><span class="xglbl">xG</span><span class="xgv">${m.xH}</span><div class="ptrack"><div class="pfill" style="width:${m.win}%"></div></div><span class="xgv r">${m.xA}</span></div>
+      <div class="probs">
+        <div class="pi w"><div class="pct">${m.win}%</div><div class="plbl">Local</div></div>
+        <div class="pi d"><div class="pct">${m.draw}%</div><div class="plbl">Empate</div></div>
+        <div class="pi l"><div class="pct">${m.loss}%</div><div class="plbl">Visita</div></div>
+      </div>
+      <div class="tops">${m.top.map(s=>`<span class="tp">${s[0]}&thinsp;–&thinsp;${s[1]} <span class="tp-pct">${s[2]}%</span></span>`).join('')}</div>
+    </div>`:''}
+    <div class="rinp"><label>Manual:</label>
+      <input class="si" type="number" min="0" max="20" id="ih_${mid}" value="${isR?r[0]:''}" placeholder="0">
+      <span class="dsep">:</span>
+      <input class="si" type="number" min="0" max="20" id="ia_${mid}" value="${isR?r[1]:''}" placeholder="0">
+      <button class="bset" onclick="setR('${mid}')">OK</button>
+      ${isR?`<button class="bclr" onclick="clrR('${mid}')">✕</button>`:''}
+    </div>
+  </div>`;
+}
+
+function rPage(gk){
+  const ms=Object.entries(DATA.matches).filter(([_,m])=>m.g===gk);
+  return `<div class="page"><div>${rSide(gk)}</div><div class="mlist">${ms.map(([mid])=>rMatch(mid)).join('')}</div></div>`;
+}
+function rTabs(){
+  document.getElementById('tabs').innerHTML=GK.map(gk=>{
+    const done=Object.entries(DATA.matches).some(([mid,m])=>m.g===gk&&st.res[mid]);
+    return `<button class="tab ${st.g===gk?'on':''} ${done?'done':''}" onclick="sw('${gk}')">GRP ${gk}</button>`;
+  }).join('');
+}
+function render(){rTabs();document.getElementById('page').innerHTML=rPage(st.g)}
+function sw(g){st.g=g;render()}
+function setR(mid){
+  const h=document.getElementById('ih_'+mid).value,a=document.getElementById('ia_'+mid).value;
+  if(h===''||a===''){toast('Ingresá los dos marcadores','#fbbf24');return}
+  st.res[mid]=[+h,+a];saveState();
+  toast(DATA.matches[mid].h+' '+h+' – '+a+' '+DATA.matches[mid].a,'#34d399');
+  render();
+}
+function clrR(mid){delete st.res[mid];saveState();render()}
+function toast(msg,col){
+  const el=document.getElementById('toast');
+  el.textContent=msg;el.style.borderColor=col||'#34d399';el.style.color=col||'#34d399';
+  el.classList.add('on');setTimeout(()=>el.classList.remove('on'),3000);
+}
+loadState();render();
+</script>
+</body>
+</html>
