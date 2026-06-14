@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Mundial FIFA 2026 — Predictor v1.9</title>
+<title>Mundial FIFA 2026 — Predictor v2.0</title>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -186,7 +186,7 @@ table.st tr:not(:last-child) td{border-bottom:1px solid rgba(31,46,74,.6)}
   <div class="header-left">
     <div class="logo-row">
       <div class="logo">FIFA World Cup <em>2026</em> — Predictor</div>
-      <span class="version-badge">v1.9</span>
+      <span class="version-badge">v2.0</span>
     </div>
     <div class="tagline">Elo dinámico · Dixon-Coles · Poisson · recalculo automático</div>
   </div>
@@ -242,7 +242,7 @@ table.st tr:not(:last-child) td{border-bottom:1px solid rgba(31,46,74,.6)}
 <div id="page"></div>
 
 <div class="foot">
-  v1.9 · Elo base FIFA Nov 2025 · K=60 World Cup × multiplicador GD (×1/×1.5/×(11+N)/8) · ventaja anfitrión +80 · Dixon-Coles ρ=−0.10 · Poisson doble ·
+  v2.0 · Elo base FIFA Nov 2025 · K=60 World Cup × multiplicador GD (×1/×1.5/×(11+N)/8) · ventaja anfitrión +80 · Dixon-Coles ρ=−0.10 · Poisson doble ·
   Score = moda pura si P≥13%, sino esperado continuo — calibrado con 8 partidos reales 11-13 jun · Persistencia localStorage
 </div>
 
@@ -348,9 +348,11 @@ function snapshotPredictions() {
 }
 
 function doRecalc() {
-  const before = snapshotPredictions(); // predicciones ANTES del Elo dinámico
-  recalcElo();
-  const after = snapshotPredictions(); // predicciones DESPUÉS
+  // Comparar: predicciones con Elo BASE vs con Elo dinámico post-resultados
+  st.elo={...BASE.elo}; // resetear a base para snapshot "antes"
+  const before = snapshotPredictions();
+  recalcElo(); // aplicar resultados reales al Elo
+  const after = snapshotPredictions();
   st.changed = new Set();
   Object.entries(after).forEach(([mid,[h,a]]) => {
     const prev = before[mid];
@@ -582,8 +584,8 @@ function toast(msg,col){
 // ── Init ──
 loadState();
 st.elo={...BASE.elo};
-if(Object.keys(st.res).length>0) recalcElo();
-st.prevPred=snapshotPredictions();
+st.prevPred=snapshotPredictions(); // snapshot con Elo BASE (sin resultados)
+if(Object.keys(st.res).length>0) recalcElo(); // ahora sí actualizar Elo
 render();
 </script>
 </body>
